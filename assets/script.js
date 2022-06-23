@@ -26,7 +26,50 @@ function currentWeather(city) {
         url: queryURL,
         method: 'GET',
     }).then(function(response) {
-        console.log(response)
+        console.log(response);
+
+        var iconType = response.weather[0].icon;
+        var iconImg = "https://openweathermap.org/img/wn/" + iconType + "@2x.png";
+        var date = new Date(response.dt * 1000).toLocaleDateString();
+        $('#current-city').html(response.name + ' (' + date + ')' + "<img src=" + iconImg + '>');
+
+        var temp = (response.main.temp - 273.15) * 1.80 + 32;
+        $('#temperature').html((temp).toFixed(2) + ' &#8457');
+
+        $('#humidity').html(response.main.humidity + '%');
+
+        var wind = ((response.wind.speed) * 2.237).toFixed(2);
+        $('#wind-speed').html(wind + ' MPH');
+
+        uvIndex(response.coord.lon, response.coord.lat);
+        forecastReport(response.id);
+        if(response.cod == 200) {
+            cities = JSON.parse(localStorage.getItem('name'));
+            console.log(cities);
+            if(cities == null) {
+                cities = [];
+                cities.push(city.toUpperCase());
+                localStorage.setItem('name', JSON.stringify(cities));
+                saveCity(city);
+            } else {
+                if(find(city) > 0) {
+                    cities.push(city.toUpperCase());
+                    localStorage.setItem('name', JSON.stringify(cities));
+                    saveCity(city);
+                }
+            }
+        }
+    });
+}
+
+function uvIndex(lon, lat) {
+    var uvURL = "https://api.openweathermap.org/data/2.5/uvi?appid=" + APIKey + "&lat=" + lat + "&lon=" + lon;
+    $.ajax({
+        url: uvURL,
+        method: 'GET',
+    }).then(function(response) {
+        $('#uv-index').html(response.value);
+        console.log(response);
     })
 }
 
