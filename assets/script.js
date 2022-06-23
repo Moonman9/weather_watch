@@ -44,17 +44,17 @@ function currentWeather(city) {
         uvIndex(response.coord.lon, response.coord.lat);
         forecastReport(response.id);
         if(response.cod == 200) {
-            cities = JSON.parse(localStorage.getItem('name'));
+            cities = JSON.parse(localStorage.getItem('city'));
             console.log(cities);
             if(cities == null) {
                 cities = [];
                 cities.push(city.toUpperCase());
-                localStorage.setItem('name', JSON.stringify(cities));
+                localStorage.setItem('city', JSON.stringify(cities));
                 saveCity(city);
             } else {
                 if(find(city) > 0) {
                     cities.push(city.toUpperCase());
-                    localStorage.setItem('name', JSON.stringify(cities));
+                    localStorage.setItem('city', JSON.stringify(cities));
                     saveCity(city);
                 }
             }
@@ -70,7 +70,62 @@ function uvIndex(lon, lat) {
     }).then(function(response) {
         $('#uv-index').html(response.value);
         console.log(response);
-    })
+    });
+}
+
+function forecastReport(cityid) {
+    var forecastURL = "https://api.openweathermap.org/data/2.5/forecast?id=" + cityid + "&appid=" + APIKey;
+    $.ajax({
+        url: forecastURL,
+        method: 'GET'
+    }).then(function(res) {
+        for(i = 0; i < 5; i++) {
+            var date = new Date((res.list[((i + 1) * 8) - 1].dt) * 1000).toLocaleDateString();
+            var iconType = res.list[((i + 1) * 8) - 1].weather[0].icon;
+            var iconImg = "https://openweathermap.org/img/wn/" + iconType + ".png";
+            var temp = res.list[((i + 1) * 8) - 1].main.temp;
+            var finalTemp = (((temp - 273.5) * 1.80) + 32).toFixed(2);
+            var windspeed = res.list[(i + 1)].wind.speed;
+            var wind = ((windspeed) * 2.237).toFixed(2);
+            var humidity = res.list[((i + 1) * 8) -1].main.humidity;
+
+            $('#forecast-date' + (i + 1)).html(date);
+            $('#forecast-img' + (i + 1)).html('<img src=' + iconImg + '>');
+            $('#forecast-temp' + (i + 1)).html(finalTemp + ' &#8457');
+            $('#forecast-wind' + (i + 1)).html(wind + ' MPH');
+            $('#forecast-humidity' + (i + 1)).html(humidity + " %");
+        }
+    });
+}
+
+function saveCity(city) {
+    var li = $('<li>' + city.toUpperCase() + '</li>');
+    $(li).attr('class', 'list-group-item');
+    $(li).attr('data-value', city.toUpperCase());
+    $('.list-group').append(li);
+}
+
+function quickSearch(e) {
+    var cityBtn = e.target;
+    if (e.target.matches('li')) {
+        city = cityBtn.textContent.trim();
+        currentWeather(city);
+    }
+}
+
+function savedCity() {
+    $('ul').empty();
+    var cities = JSON.parse(localStorage.getItem('city'));
+    if(cities !== null) {
+        cities = JSON.parse(localStorage.getItem('city'));
+        for(i = 0; i < cities.length; i++) {
+            saveCity(cities[i]);
+        }
+        city = cities[i - 1];
+        currentWeather(city);
+    }
 }
 
 $('#search-btn').on('click', currentCity);
+$(document).on('click', quickSearch);
+$(window).on('load', savedCity);

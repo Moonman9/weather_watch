@@ -1,3 +1,7 @@
+*{
+    box-sizing: border-box;
+}
+
 h1{
     color: white;
     font-family: 'Quicksand', sans-serif;
@@ -7,4 +11,10 @@ h1{
 .jumbotron{
     background: rgb(2,0,36);
     background: linear-gradient(90deg, rgba(0,212,255,1) 0%, rgba(9,9,121,1) 35%, rgba(2,0,36,1) 100%);
+}
+
+li:hover{
+    background-color: rgba(9,9,121,1);
+    color: white;
+    cursor: pointer;
 }
